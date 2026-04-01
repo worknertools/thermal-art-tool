@@ -1,0 +1,514 @@
+<!DOCTYPE html>
+<html lang="en">
+
+  <head>
+    <meta charset="UTF-8">
+    <title>Type play</title>
+    
+
+  </head>
+    
+  <body>
+  <!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Subject Fluid Lab - V2 Metallic Edition</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <style>
+        * {
+            outline: none !important;
+            border: none !important;
+            box-shadow: none !important;
+            margin: 0;
+            padding: 0;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            background-color: #EBEBEB;
+            display: flex;
+            justify-content: flex-start; 
+            align-items: stretch;        
+            height: 100vh;               
+            font-family: "PingFang SC", "Helvetica Neue", Helvetica, Arial, sans-serif;
+            overflow: hidden;
+            -webkit-user-select: none;
+            user-select: none;
+        }
+
+        .main-container {
+            display: flex;
+            align-items: center; 
+            width: 100vw;
+            height: 100vh;
+        }
+
+        .sidebar {
+            width: 280px; 
+            background-color: #3B95FF; /* 侧边栏主蓝 */
+            padding: 50px 35px; 
+            box-sizing: border-box;
+            display: flex;
+            flex-direction: column;
+            height: 100%; 
+            z-index: 1000;
+            color: #000000; 
+            box-shadow: 6px 0 20px rgba(0,0,0,0.1); 
+            overflow-y: auto;
+        }
+
+        .canvas-wrapper {
+            height: 82vh; 
+            max-height: 950px;
+            aspect-ratio: 3 / 4; 
+            width: calc(82vh * 0.75);
+            background: #FFFFFF; 
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+            overflow: hidden; 
+            margin: auto; 
+            border: 0 !important;
+            transition: background 0.3s ease;
+        }
+        
+        canvas { width: 100%; height: 100%; display: block; }
+
+        .btn-import {
+            background: #FFFFFF; color: #000000; padding: 12px 0; 
+            width: 100%; font-size: 11px; font-weight: bold; margin-bottom: 30px; 
+            text-align: center; cursor: pointer; letter-spacing: 1px;
+            display: flex; align-items: center; justify-content: center; gap: 8px;
+        }
+        
+        .control-group { margin-bottom: 22px; }
+        .label { font-size: 10px; color: #000000; font-weight: bold; margin-bottom: 8px; display: flex; justify-content: space-between; align-items: flex-end; }
+        
+        select {
+            width: 100%; background: #FFFFFF; height: 30px; 
+            font-size: 11px; font-weight: bold; padding: 0 5px; cursor: pointer;
+        }
+
+        .btn-pause {
+            width: 30px; height: 30px; background: #FFFFFF;
+            display: flex; align-items: center; justify-content: center; cursor: pointer; flex-shrink: 0;
+        }
+
+        .color-picker-item {
+            width: 100%; background: #FFFFFF; height: 30px; 
+            display: flex; align-items: center; padding: 0 10px; box-sizing: border-box; gap: 10px;
+        }
+
+        .btn-bg-upload {
+            background: #000000; color: #3B95FF; width: 100%; height: 26px;
+            font-size: 9px; font-weight: bold; margin-top: 8px; cursor: pointer;
+            display: flex; align-items: center; justify-content: center; gap: 6px;
+        }
+
+        input[type=color] { width: 18px; height: 18px; border: none; background: none; cursor: pointer; flex-shrink: 0; }
+        
+        .hex-input { 
+            font-size: 10px; font-weight: bold; font-family: monospace; 
+            background: transparent; width: 100%; color: #000000;
+        }
+
+        input[type=range] { -webkit-appearance: none; width: 100%; background: transparent; padding: 8px 0; }
+        input[type=range]::-webkit-slider-runnable-track { width: 100%; height: 2px; background: #000000; }
+        input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; height: 12px; width: 12px; border-radius: 50%; background: #000000; margin-top: -5px; cursor: pointer; }
+        
+        .btn-export { 
+            flex: 1; background: #000000; color: #3B95FF; 
+            padding: 10px 0; font-size: 10px; font-weight: bold; cursor: pointer; 
+        }
+        .btn-export:disabled { opacity: 0.5; cursor: wait; }
+
+        #resetBtn { cursor: pointer; text-decoration: none; opacity: 0.8; font-size: 9px; }
+
+        .sidebar-footer { margin-top: auto; font-size: 10px; line-height: 1.5; color: #000000; opacity: 0.8; font-weight: 600; padding-top: 40px; }
+    </style>
+</head>
+<body>
+<div class="main-container">
+    <div class="sidebar">
+        <button class="btn-import" id="importBtn">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M12 3v13M7 8l5-5 5 5M5 21h14"></path>
+            </svg>
+            图片或视频 IMPORT
+        </button>
+
+        <div class="control-group">
+            <div class="label">背景颜色 BG COLOR</div>
+            <div class="color-picker-item">
+                <input type="color" id="bgColor" value="#FFFFFF">
+                <input type="text" class="hex-input" id="v-bgColor" value="#FFFFFF" spellcheck="false" maxlength="9">
+            </div>
+            <button class="btn-bg-upload" id="importBgBtn">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M12 3v13M7 8l5-5 5 5M5 21h14"></path>
+                </svg>
+                上传背景图 IMAGE
+            </button>
+        </div>
+
+        <div class="control-group">
+            <div class="label">抠像阈值 THRESHOLD <span id="v-threshold">0.45</span></div>
+            <input type="range" id="threshold" min="0.0" max="1.0" step="0.01" value="0.45">
+        </div>
+
+        <div class="control-group">
+            <div class="label">流动速度 SPEED <span id="v-speed">0.5</span></div>
+            <input type="range" id="speed" min="0.0" max="2.0" step="0.01" value="0.5">
+        </div>
+
+        <div class="control-group">
+            <div class="label">图形缩放 SCALE <span id="v-scale">1.0</span></div>
+            <input type="range" id="scale" min="0.1" max="2.0" step="0.01" value="1.0">
+        </div>
+
+        <div class="control-group">
+            <div class="label">重构主题 THEME</div>
+            <div style="display: flex; gap: 8px;">
+                <select id="themeSelect">
+                    <option value="Original">ORIGINAL HOLOGRAPHIC</option>
+                    <option value="ThermalLiquid">SPECTRAL LIQUID (参考图效果)</option>
+                    <option value="Metallic">MONO GRAYSCALE (金属质感)</option>
+                </select>
+                <button class="btn-pause" id="pauseBtn" title="暂停/播放">
+                    <svg id="pauseIcon" width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
+                        <rect x="6" y="4" width="4" height="16"></rect><rect x="14" y="4" width="4" height="16"></rect>
+                    </svg>
+                </button>
+            </div>
+        </div>
+
+        <div class="label" style="margin-top: 20px;">
+            导出 EXPORT
+            <span id="resetBtn">RESET 重置</span>
+        </div>
+        <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+            <button id="downloadJpg" class="btn-export">JPG</button>
+            <button id="downloadPng" class="btn-export">PNG</button>
+            <button id="downloadMp4" class="btn-export" style="flex: 100%;">DOWNLOAD MP4</button>
+        </div>
+
+        <div class="sidebar-footer">
+            2026 © Designed by Type Play Lab.
+        </div>
+    </div>
+
+    <div class="canvas-wrapper" id="dropZone">
+        <input type="file" id="fileInput" accept="image/*,video/*" style="display: none;">
+        <input type="file" id="bgFileInput" accept="image/*" style="display: none;">
+    </div>
+</div>
+
+<script>
+    const themes = {
+        'Original': { mode: 0.0, c: [] },
+        'ThermalLiquid': { mode: 1.0, c: [[0,0,0.5],[0,0,1],[0,1,1],[0,1,0],[1,1,0],[1,0.5,0],[1,0,0]] },
+        'Metallic': { mode: 2.0, c: [] }
+    };
+
+    const fragmentShader = `
+        uniform vec2 uResolution;
+        uniform float uTime;
+        uniform float uSpeed;
+        uniform float uThreshold;
+        uniform float uScale;
+        uniform vec3 uBgColor;
+        uniform vec3 uC[7]; 
+        uniform sampler2D uTexture;
+        uniform vec2 uTexRes;
+        uniform sampler2D uBgTexture;
+        uniform float uHasBgTexture;
+        uniform float uHasMainTexture;
+        uniform vec2 uBgRes;
+        uniform float uMode; 
+        uniform float uIsTransparent;
+        varying vec2 vUv;
+
+        vec2 getContainUv(vec2 uv, vec2 canvasRes, vec2 texRes, float userScale) {
+            float canvasAspect = canvasRes.x / canvasRes.y;
+            float texAspect = texRes.x / texRes.y;
+            vec2 scale = vec2(1.0);
+            if (canvasAspect > texAspect) { scale.x = canvasAspect / texAspect; } 
+            else { scale.y = texAspect / canvasAspect; }
+            return (uv - 0.5) * scale / userScale + 0.5;
+        }
+
+        vec3 getThermal(float v) {
+            v = clamp(v, 0.0, 1.0);
+            float s = 1.0 / 6.0;
+            if(v < s) return mix(uC[0], uC[1], v * 6.0);
+            if(v < s * 2.0) return mix(uC[1], uC[2], (v - s) * 6.0);
+            if(v < s * 3.0) return mix(uC[2], uC[3], (v - s * 2.0) * 6.0);
+            if(v < s * 4.0) return mix(uC[3], uC[4], (v - s * 3.0) * 6.0);
+            if(v < s * 5.0) return mix(uC[4], uC[5], (v - s * 4.0) * 6.0);
+            return mix(uC[5], uC[6], (v - s * 5.0) * 6.0);
+        }
+
+        void main() {
+            if(uHasMainTexture < 0.5) {
+                vec3 eb = uBgColor;
+                if(uHasBgTexture > 0.5) eb = texture2D(uBgTexture, getContainUv(vUv, uResolution, uBgRes, 1.0)).rgb;
+                gl_FragColor = vec4(eb, (uIsTransparent > 0.5 ? 0.0 : 1.0)); return;
+            }
+
+            float time = uTime * uSpeed;
+            vec2 mainUv = getContainUv(vUv, uResolution, uTexRes, uScale);
+            vec4 texSmp = texture2D(uTexture, mainUv);
+            float gray = dot(texSmp.rgb, vec3(0.299, 0.587, 0.114));
+            float mask = smoothstep(uThreshold, uThreshold + 0.05, (texSmp.a < 0.1 ? 0.0 : 1.0 - gray));
+            mask *= step(0.0, mainUv.x) * step(mainUv.x, 1.0) * step(0.0, mainUv.y) * step(mainUv.y, 1.0);
+
+            vec3 fluidCol;
+            float n = sin(mainUv.x * 3.5 + time) * cos(mainUv.y * 3.0 - time * 0.8) * 0.15;
+            
+            if(uMode < 0.5) {
+                float gv = cos(gray * 6.28 + sin(gray * 8.0 + n + time) * 1.5);
+                fluidCol = vec3(cos(gv), cos(gv + 2.0), cos(gv + 4.0)) * 0.5 + 0.5;
+            } 
+            else if (uMode > 1.5) {
+                float baseDetail = gray;
+                float reflection = sin(gray * 10.0 + n * 3.0 + time * 0.8) * 0.1;
+                float fresnel = pow(1.0 - baseDetail, 2.0) * 0.25;
+                float specular = pow(max(0.0, sin(gray * 15.0 + n * 4.0 + time)), 15.0) * 0.35;
+                float finalMetal = baseDetail * 0.8 + 0.15 + reflection + fresnel + specular;
+                fluidCol = vec3(clamp(finalMetal, 0.0, 1.0));
+            }
+            else {
+                fluidCol = getThermal(gray + n + sin(time * 0.3) * 0.05);
+            }
+
+            vec3 baseBg = uBgColor;
+            if(uHasBgTexture > 0.5) baseBg = texture2D(uBgTexture, getContainUv(vUv, uResolution, uBgRes, 1.0)).rgb;
+            
+            vec3 finalColor = mix(baseBg, fluidCol, mask);
+            float alpha = (uIsTransparent > 0.5) ? mask : 1.0;
+            gl_FragColor = vec4(finalColor, alpha);
+        }
+    `;
+
+    const wrapper = document.getElementById('dropZone');
+    const scene = new THREE.Scene();
+    const camera = new THREE.OrthographicCamera(-1, 1, 1, -1, 0.1, 10);
+    camera.position.z = 1;
+    const renderer = new THREE.WebGLRenderer({ antialias: true, preserveDrawingBuffer: true, alpha: true });
+    wrapper.appendChild(renderer.domElement);
+
+    const material = new THREE.ShaderMaterial({
+        vertexShader: `varying vec2 vUv; void main() { vUv = uv; gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }`,
+        fragmentShader,
+        transparent: true,
+        uniforms: {
+            uResolution: { value: new THREE.Vector2() }, uTime: { value: 0.0 }, uSpeed: { value: 0.5 },
+            uThreshold: { value: 0.45 }, uScale: { value: 1.0 }, uBgColor: { value: new THREE.Color(0xffffff) },
+            uC: { value: [new THREE.Color(), new THREE.Color(), new THREE.Color(), new THREE.Color(), new THREE.Color(), new THREE.Color(), new THREE.Color()] },
+            uTexture: { value: new THREE.Texture() }, uTexRes: { value: new THREE.Vector2(1, 1) },
+            uBgTexture: { value: new THREE.Texture() }, uBgRes: { value: new THREE.Vector2(1, 1) },
+            uHasBgTexture: { value: 0.0 }, uHasMainTexture: { value: 0.0 }, uMode: { value: 0.0 },
+            uIsTransparent: { value: 0.0 }
+        }
+    });
+
+    const mesh = new THREE.Mesh(new THREE.PlaneGeometry(2, 2), material);
+    scene.add(mesh);
+
+    function resize() {
+        const w = wrapper.clientWidth, h = wrapper.clientHeight;
+        renderer.setSize(w, h);
+        material.uniforms.uResolution.value.set(w, h);
+    }
+
+    // 处理文件导入的核心函数
+    function handleFile(file) {
+        if (!file) return;
+        material.uniforms.uHasMainTexture.value = 1.0;
+        const url = URL.createObjectURL(file);
+        
+        if (file.type.startsWith('video')) {
+            if(videoElement) { videoElement.pause(); videoElement.remove(); }
+            videoElement = document.createElement('video');
+            videoElement.src = url;
+            videoElement.loop = videoElement.muted = true;
+            videoElement.setAttribute('playsinline', '');
+            videoElement.play();
+            videoElement.onloadedmetadata = () => {
+                const tex = new THREE.VideoTexture(videoElement);
+                tex.minFilter = THREE.LinearFilter;
+                material.uniforms.uTexture.value = tex;
+                material.uniforms.uTexRes.value.set(videoElement.videoWidth, videoElement.videoHeight);
+            };
+        } else {
+            if(videoElement) { videoElement.pause(); videoElement.remove(); videoElement = null; }
+            new THREE.TextureLoader().load(url, (tex) => {
+                material.uniforms.uTexture.value = tex;
+                material.uniforms.uTexRes.value.set(tex.image.width, tex.image.height);
+            });
+        }
+    }
+
+    // 拖放上传功能
+    wrapper.ondragover = (e) => { e.preventDefault(); wrapper.style.background = '#f7f7f7'; };
+    wrapper.ondragleave = () => { wrapper.style.background = '#FFFFFF'; };
+    wrapper.ondrop = (e) => {
+        e.preventDefault();
+        wrapper.style.background = '#FFFFFF';
+        handleFile(e.dataTransfer.files[0]);
+    };
+
+    const fileInput = document.getElementById('fileInput');
+    const bgFileInput = document.getElementById('bgFileInput');
+    let videoElement = null;
+    let isPaused = false; 
+
+    document.getElementById('importBtn').onclick = () => fileInput.click();
+    document.getElementById('importBgBtn').onclick = () => bgFileInput.click();
+    
+    fileInput.onchange = (e) => {
+        handleFile(e.target.files[0]);
+        e.target.value = ''; // 允许重复上传同一文件
+    };
+
+    bgFileInput.onchange = (e) => {
+        const file = e.target.files[0]; if (!file) return;
+        new THREE.TextureLoader().load(URL.createObjectURL(file), (tex) => {
+            material.uniforms.uBgTexture.value = tex;
+            material.uniforms.uBgRes.value.set(tex.image.width, tex.image.height);
+            material.uniforms.uHasBgTexture.value = 1.0;
+        });
+        e.target.value = '';
+    };
+
+    // 背景颜色逻辑
+    const hexInput = document.getElementById('v-bgColor');
+    const colorPicker = document.getElementById('bgColor');
+    function applyColor(val) {
+        let s = val.trim(); if(!s.startsWith('#')) s = '#' + s;
+        const c = new THREE.Color();
+        try { c.set(s); material.uniforms.uBgColor.value.copy(c); if(s.length === 7) colorPicker.value = s; } catch(e) {}
+    }
+    hexInput.oninput = (e) => applyColor(e.target.value);
+    colorPicker.oninput = (e) => {
+        material.uniforms.uBgColor.value.set(e.target.value);
+        hexInput.value = e.target.value.toUpperCase();
+    };
+
+    const bind = (id, uniform) => {
+        const el = document.getElementById(id);
+        el.oninput = () => {
+            material.uniforms[uniform].value = parseFloat(el.value);
+            document.getElementById('v-' + id).innerText = el.value;
+        };
+    };
+    bind('speed', 'uSpeed'); bind('threshold', 'uThreshold'); bind('scale', 'uScale');
+
+    function applyTheme(key) {
+        const t = themes[key];
+        material.uniforms.uMode.value = t.mode;
+        if(t.mode === 1.0) t.c.forEach((rgb, i) => material.uniforms.uC.value[i].setRGB(...rgb));
+    }
+    document.getElementById('themeSelect').onchange = (e) => applyTheme(e.target.value);
+    applyTheme('Original');
+
+    // 高清图片导出 logic
+    async function exportImage(isPng) {
+        const ow = wrapper.clientWidth, oh = wrapper.clientHeight;
+        const printW = 3508, printH = 4961; 
+        material.uniforms.uIsTransparent.value = isPng ? 1.0 : 0.0;
+        renderer.setSize(printW, printH, false);
+        material.uniforms.uResolution.value.set(printW, printH);
+        renderer.render(scene, camera);
+        const format = isPng ? 'image/png' : 'image/jpeg';
+        const link = document.createElement('a');
+        link.download = isPng ? 'fluid-A3-transparent.png' : 'fluid-A3-highres.jpg';
+        link.href = renderer.domElement.toDataURL(format, 1.0);
+        link.click();
+        material.uniforms.uIsTransparent.value = 0.0;
+        renderer.setSize(ow, oh, false);
+        material.uniforms.uResolution.value.set(ow, oh);
+    }
+
+    document.getElementById('downloadJpg').onclick = () => exportImage(false);
+    document.getElementById('downloadPng').onclick = () => exportImage(true);
+
+    document.getElementById('downloadMp4').onclick = async function() {
+        const btn = this;
+        let isVideo = (videoElement && !isNaN(videoElement.duration));
+        let dur = isVideo ? videoElement.duration : 5.0; 
+        btn.disabled = true; btn.innerText = "UHD RECORDING...";
+        const ow = wrapper.clientWidth, oh = wrapper.clientHeight;
+        renderer.setSize(2160, 2880, false);
+        material.uniforms.uResolution.value.set(2160, 2880);
+        material.uniforms.uIsTransparent.value = 0.0;
+        if (isVideo) { videoElement.pause(); videoElement.currentTime = 0; videoElement.loop = false; await new Promise(r => setTimeout(r, 500)); }
+        const mimeType = ['video/webm;codecs=vp9', 'video/webm;codecs=vp8', 'video/mp4;codecs=avc1', 'video/mp4'].find(type => MediaRecorder.isTypeSupported(type));
+        const stream = renderer.domElement.captureStream(60);
+        const recorder = new MediaRecorder(stream, { mimeType, videoBitsPerSecond: 90000000 });
+        const chunks = [];
+        recorder.ondataavailable = e => chunks.push(e.data);
+        recorder.onstop = () => {
+            const extension = mimeType.includes('webm') ? 'webm' : 'mp4';
+            const b = new Blob(chunks, { type: `video/${extension}` });
+            const a = document.createElement('a'); a.href = URL.createObjectURL(b); a.download = `fluid-uhd.${extension}`; a.click();
+            btn.disabled = false; btn.innerText = "DOWNLOAD MP4";
+            if(isVideo) { videoElement.loop = true; videoElement.play(); }
+            renderer.setSize(ow, oh, false); material.uniforms.uResolution.value.set(ow, oh);
+        };
+        recorder.start();
+        if(isVideo) videoElement.play();
+        let start = Date.now();
+        const track = () => {
+            let current = isVideo ? videoElement.currentTime : (Date.now() - start) / 1000;
+            let p = current / dur;
+            btn.innerText = `EXPORTING... ${Math.min(Math.floor(p * 100), 100)}%`;
+            if (!(isVideo ? videoElement.ended : (p >= 1.0))) requestAnimationFrame(track);
+            else setTimeout(() => recorder.stop(), 300);
+        };
+        track();
+    };
+
+    document.getElementById('resetBtn').onclick = () => {
+        if(videoElement) { videoElement.pause(); videoElement.remove(); videoElement = null; }
+        material.uniforms.uHasMainTexture.value = 0.0;
+        material.uniforms.uHasBgTexture.value = 0.0;
+        material.uniforms.uTexture.value = new THREE.Texture();
+        material.uniforms.uBgTexture.value = new THREE.Texture();
+        hexInput.value = "#FFFFFF"; applyColor("#FFFFFF");
+        document.getElementById('threshold').value = 0.45; material.uniforms.uThreshold.value = 0.45;
+        document.getElementById('v-threshold').innerText = "0.45";
+        document.getElementById('speed').value = 0.5; material.uniforms.uSpeed.value = 0.5;
+        document.getElementById('v-speed').innerText = "0.5";
+        document.getElementById('scale').value = 1.0; material.uniforms.uScale.value = 1.0;
+        document.getElementById('v-scale').innerText = "1.0";
+        document.getElementById('themeSelect').value = "Original"; applyTheme('Original');
+        isPaused = false;
+        document.getElementById('pauseIcon').innerHTML = `<rect x="6" y="4" width="4" height="16"></rect><rect x="14" y="4" width="4" height="16"></rect>`;
+    };
+
+    document.getElementById('pauseBtn').onclick = () => {
+        isPaused = !isPaused;
+        document.getElementById('pauseIcon').innerHTML = isPaused ? `<path d="M8 5v14l11-7z"></path>` : `<rect x="6" y="4" width="4" height="16"></rect><rect x="14" y="4" width="4" height="16"></rect>`;
+        if (videoElement) { if (isPaused) videoElement.pause(); else videoElement.play(); }
+    };
+
+    let totalTime = 0;
+    const clock = new THREE.Clock();
+    function animate() {
+        requestAnimationFrame(animate);
+        if(!isPaused) totalTime += clock.getDelta(); else clock.getDelta();
+        material.uniforms.uTime.value = totalTime;
+        renderer.render(scene, camera);
+    }
+    window.addEventListener('resize', resize); resize(); animate();
+</script>
+</body>
+</html>
+    
+  </body>
+  
+</html>
